@@ -1,0 +1,57 @@
+const ar = {
+  home: {
+    balance:      'الرصيد الشهري',
+    income:       'الدخل',
+    expense:      'المصاريف',
+    recent:       'آخر المعاملات',
+    emptyTitle:   'لا توجد معاملات',
+    emptySubtitle:'أضف أول معاملة لتتبع إنفاقك',
+  },
+  transaction: {
+    add:             'إضافة معاملة',
+    save:            'حفظ',
+    expense:         'مصروف',
+    income:          'دخل',
+    amount:          'المبلغ',
+    category:        'الفئة',
+    note:            'ملاحظة',
+    notePlaceholder: 'اختياري...',
+  },
+  goals: {
+    title:          'أهداف التوفير',
+    newGoal:        'هدف جديد',
+    create:         'إنشاء الهدف',
+    deposit:        'إضافة مبلغ',
+    add:            'إضافة',
+    namePlaceholder:'اسم الهدف',
+    targetPlaceholder: 'المبلغ المستهدف',
+    emptyTitle:     'لا توجد أهداف',
+    emptySubtitle:  'أنشئ هدفاً للبدء في التوفير',
+  },
+  stats: {
+    title:             'الإحصاءات',
+    byCategory:        'المصاريف حسب الفئة',
+    totalTransactions: 'إجمالي المعاملات',
+    emptyTitle:        'لا توجد بيانات',
+    emptySubtitle:     'أضف معاملات لعرض الإحصاءات',
+  },
+  settings: {
+    title:    'الإعدادات',
+    general:  'عام',
+    about:    'حول التطبيق',
+    currency: 'العملة',
+    language: 'اللغة',
+    version:  'الإصدار',
+    tagline:  'تتبع مصاريفك بذكاء',
+    madeWith: 'صُنع بـ',
+    platform: 'المنصة',
+  },
+  errors: {
+    invalidAmount: 'أدخل مبلغاً صحيحاً أكبر من صفر',
+    fillRequired:  'يرجى ملء جميع الحقول المطلوبة',
+    generic:       'حدث خطأ غير متوقع',
+  },
+} as const;
+
+export default ar;
+export type ArTranslation = typeof ar;

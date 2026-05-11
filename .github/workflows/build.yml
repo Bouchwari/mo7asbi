@@ -1,0 +1,104 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Hasabi — EAS Build CI/CD
+#
+# Triggers:
+#   • push to main  → production AAB  (Play Store)
+#   • push to dev   → preview APK     (internal testing)
+#
+# Required GitHub secrets:
+#   EXPO_TOKEN  — Expo account token  (https://expo.dev/accounts/[user]/settings/access-tokens)
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: EAS Build
+
+on:
+  push:
+    branches:
+      - main    # production build
+      - dev     # preview APK
+
+  # Allow manual runs from the Actions tab
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'EAS build profile'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - production
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true          # cancel stale builds when you push again
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # 1. Type-check — fast gate, runs before spending EAS credits
+  # ──────────────────────────────────────────────────────────────────────────
+  type-check:
+    name: TypeScript check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tsc
+        run: npx tsc --noEmit
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 2. EAS Build
+  # ──────────────────────────────────────────────────────────────────────────
+  eas-build:
+    name: EAS Build (${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }})
+    runs-on: ubuntu-latest
+    needs: type-check           # only runs when TypeScript passes
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # Determine profile: manual input → branch name fallback
+      - name: Resolve build profile
+        id: profile
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.profile }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "name=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=preview" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build (${{ steps.profile.outputs.name }})
+        run: >
+          eas build
+          --platform android
+          --profile ${{ steps.profile.outputs.name }}
+          --non-interactive
+          --no-wait
+
+      # --no-wait means the job exits quickly after submitting to EAS cloud.
+      # The actual build runs on Expo's servers (~10-15 min).
+      # Check progress at: https://expo.dev/accounts/[user]/projects/hasabi/builds

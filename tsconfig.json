@@ -1,0 +1,20 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "baseUrl": ".",
+    "paths": {
+      "@domain/*":         ["src/domain/*"],
+      "@application/*":   ["src/application/*"],
+      "@infrastructure/*":["src/infrastructure/*"],
+      "@presentation/*":  ["src/presentation/*"],
+      "@i18n/*":          ["src/i18n/*"],
+      "@src/*":           ["src/*"]
+    }
+  },
+  "include": ["src", "App.tsx", "index.js"]
+}
