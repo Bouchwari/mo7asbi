@@ -45,11 +45,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'npm'
+          cache: 'yarn'
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: tsc --noEmit
         run: npx tsc --noEmit
@@ -68,11 +68,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'npm'
+          cache: 'yarn'
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
