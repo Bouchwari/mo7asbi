@@ -1,8 +1,6 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Hasabi — Pull Request gate
-#
-# Runs on every PR to main or dev. Does NOT trigger an EAS build —
-# that only happens on push to those branches after merge.
+# Runs on every PR. No EAS build — that only happens on merge.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: PR Check
@@ -26,8 +24,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
