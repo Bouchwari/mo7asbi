@@ -1,15 +1,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Hasabi — Pull Request gate
-# Runs on every PR. No EAS build — that only happens on merge.
+# Hasabi — Pull Request gate (type-check only, no build)
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: PR Check
 
 on:
   pull_request:
-    branches:
-      - main
-      - dev
+    branches: [main, dev]
 
 concurrency:
   group: pr-${{ github.event.pull_request.number }}
@@ -25,11 +22,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'yarn'
+          cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: tsc --noEmit
-        run: npx tsc --noEmit
+      - run: npm ci
+      - run: npx tsc --noEmit

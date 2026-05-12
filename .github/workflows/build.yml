@@ -1,32 +1,36 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Hasabi — EAS Build CI/CD
+# Hasabi — Android APK build (no EAS, 100% free GitHub Actions)
 #
 # Triggers:
-#   • push to main  → production AAB  (Play Store)
-#   • push to dev   → preview APK     (internal testing)
+#   • push to main  → release APK (signed if keystore secrets are set)
+#   • push to dev   → debug APK   (no signing required)
+#   • manual run    → choose variant
 #
-# Required GitHub secret:
-#   EXPO_TOKEN  — https://expo.dev/accounts/[user]/settings/access-tokens
+# Optional secrets for signed release builds:
+#   ANDROID_KEYSTORE_BASE64   — base64-encoded .jks file
+#   ANDROID_STORE_PASSWORD    — keystore password
+#   ANDROID_KEY_ALIAS         — key alias inside the keystore
+#   ANDROID_KEY_PASSWORD      — key password
+#
+# The built APK is uploaded as a downloadable artifact on the Actions run page.
 # ─────────────────────────────────────────────────────────────────────────────
 
-name: EAS Build
+name: Build APK
 
 on:
   push:
-    branches:
-      - main
-      - dev
+    branches: [main, dev]
 
   workflow_dispatch:
     inputs:
-      profile:
-        description: 'EAS build profile'
+      variant:
+        description: 'Build variant'
         required: true
-        default: 'preview'
+        default: 'debug'
         type: choice
         options:
-          - preview
-          - production
+          - debug
+          - release
 
 concurrency:
   group: build-${{ github.ref }}
@@ -34,10 +38,10 @@ concurrency:
 
 jobs:
   # ──────────────────────────────────────────────────────────────────────────
-  # 1. Type-check — fast gate before spending EAS credits
+  # 1. TypeScript gate — fails fast before wasting build minutes
   # ──────────────────────────────────────────────────────────────────────────
   type-check:
-    name: TypeScript check
+    name: TypeScript
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,20 +49,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'yarn'
+          cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: tsc --noEmit
-        run: npx tsc --noEmit
+      - run: npm ci
+      - run: npx tsc --noEmit
 
   # ──────────────────────────────────────────────────────────────────────────
-  # 2. EAS Build (only after TypeScript passes)
+  # 2. Build APK with Gradle (no EAS)
   # ──────────────────────────────────────────────────────────────────────────
-  eas-build:
-    name: EAS Build (${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }})
+  build-apk:
+    name: Build APK
     runs-on: ubuntu-latest
     needs: type-check
 
@@ -68,33 +69,67 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'yarn'
+          cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Setup EAS
-        uses: expo/expo-github-action@v8
+      # Java 17 is required by modern Android Gradle plugin
+      - uses: actions/setup-java@v4
         with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Resolve build profile
-        id: profile
+      - name: Install JS dependencies
+        run: npm ci
+
+      # Generate the native android/ folder from Expo config
+      - name: Expo prebuild
+        run: npx expo prebuild --platform android --clean
+
+      # ── Resolve which variant to build ──────────────────────────────────
+      - name: Resolve variant
+        id: variant
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "name=${{ inputs.profile }}" >> "$GITHUB_OUTPUT"
+            echo "name=${{ inputs.variant }}" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "name=production" >> "$GITHUB_OUTPUT"
+            echo "name=release" >> "$GITHUB_OUTPUT"
           else
-            echo "name=preview" >> "$GITHUB_OUTPUT"
+            echo "name=debug" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Build (${{ steps.profile.outputs.name }})
+      # ── Signing setup (only for release, only when secrets exist) ────────
+      - name: Decode keystore
+        if: steps.variant.outputs.name == 'release' && secrets.ANDROID_KEYSTORE_BASE64 != ''
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/hasabi.keystore
+
+      # ── Gradle build ─────────────────────────────────────────────────────
+      - name: Build debug APK
+        if: steps.variant.outputs.name == 'debug'
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Build release APK (signed)
+        if: steps.variant.outputs.name == 'release' && secrets.ANDROID_KEYSTORE_BASE64 != ''
+        working-directory: android
         run: >
-          eas build
-          --platform android
-          --profile ${{ steps.profile.outputs.name }}
-          --non-interactive
-          --no-wait
+          ./gradlew assembleRelease --no-daemon
+          -Pandroid.injected.signing.store.file=${{ github.workspace }}/android/app/hasabi.keystore
+          -Pandroid.injected.signing.store.password=${{ secrets.ANDROID_STORE_PASSWORD }}
+          -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEY_ALIAS }}
+          -Pandroid.injected.signing.key.password=${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Build release APK (unsigned — no keystore secrets set)
+        if: steps.variant.outputs.name == 'release' && secrets.ANDROID_KEYSTORE_BASE64 == ''
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      # ── Upload artifact ───────────────────────────────────────────────────
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: hasabi-${{ steps.variant.outputs.name }}-${{ github.sha }}
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/release/app-release*.apk
+          if-no-files-found: warn
+          retention-days: 14

@@ -4,6 +4,7 @@ import { MotiView } from 'moti';
 import * as Haptics from 'expo-haptics';
 import { format } from 'date-fns';
 import { ar as arLocale } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
 import { Transaction } from '@domain/transaction/entities/Transaction';
 import { TransactionType } from '@domain/transaction/value-objects/Category';
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export function TransactionListItem({ transaction: tx, index, onPress }: Props): React.JSX.Element {
+  const { t } = useTranslation();
   const isIncome = tx.type === TransactionType.INCOME;
   const amountColor = isIncome ? colors.income[600] : colors.expense[600];
   const amountSign  = isIncome ? '+' : '-';
@@ -47,7 +49,7 @@ export function TransactionListItem({ transaction: tx, index, onPress }: Props):
         {/* Label + date */}
         <View style={styles.info}>
           <Text style={styles.categoryLabel} numberOfLines={1}>
-            {tx.category.meta.id}
+            {t(`categories.${tx.category.meta.id}`)}
           </Text>
           {tx.note ? (
             <Text style={styles.note} numberOfLines={1}>{tx.note}</Text>

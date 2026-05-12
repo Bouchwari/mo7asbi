@@ -22,12 +22,12 @@ export const useGoalStore = create<GoalState>((set, get) => ({
 
   loadGoals: async () => {
     set({ isLoading: true, error: null });
-    try {
-      const goals = await container.goalRepository.findAll();
-      set({ goals, isLoading: false });
-    } catch {
-      set({ error: 'فشل في تحميل الأهداف', isLoading: false });
+    const result = await container.getGoals.execute();
+    if (result.isFailure) {
+      set({ error: result.error, isLoading: false });
+      return;
     }
+    set({ goals: result.value, isLoading: false });
   },
 
   createGoal: async (dto) => {

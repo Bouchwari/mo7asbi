@@ -43,6 +43,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   },
 
   addTransaction: async (dto) => {
+    set({ error: null });
     const result = await container.addTransaction.execute(dto);
     if (result.isFailure) return { success: false, error: result.error };
     const { selectedYear, selectedMonth } = get();
@@ -51,6 +52,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   },
 
   deleteTransaction: async (id) => {
+    set({ error: null });
     const result = await container.deleteTransaction.execute(id);
     if (result.isFailure) return { success: false, error: result.error };
     const { selectedYear, selectedMonth } = get();

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MotiView } from 'moti';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
 
 import { theme } from '@presentation/theme';
 import { Button, ScreenWrapper } from '@presentation/components/ui';
@@ -14,6 +15,7 @@ const { colors, typography, spacing, radius, animations } = theme;
 
 export default function AddTransactionScreen(): React.JSX.Element {
   const { t } = useTranslation();
+  const nav = useNavigation();
   const { addTransaction } = useTransactionStore();
 
   const [type,       setType]       = useState<TransactionType>(TransactionType.EXPENSE);
@@ -46,7 +48,7 @@ export default function AddTransactionScreen(): React.JSX.Element {
     setLoading(false);
     if (result.success) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setAmount(''); setNote(''); setError(null);
+      nav.goBack();
     } else {
       setError(result.error ?? t('errors.generic'));
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -62,7 +64,16 @@ export default function AddTransactionScreen(): React.JSX.Element {
           transition={{ type: 'spring', ...animations.spring.gentle }}
           style={styles.header}
         >
+          <Pressable
+            onPress={() => { void Haptics.selectionAsync(); nav.goBack(); }}
+            style={styles.closeBtn}
+            hitSlop={12}
+          >
+            <Text style={styles.closeBtnText}>✕</Text>
+          </Pressable>
           <Text style={styles.title}>{t('transaction.add')}</Text>
+          {/* spacer keeps title centred */}
+          <View style={styles.closeBtn} />
         </MotiView>
 
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
@@ -114,7 +125,7 @@ export default function AddTransactionScreen(): React.JSX.Element {
                     onPress={() => { void Haptics.selectionAsync(); setCategoryId(cat.id); }}
                     style={[styles.categoryChip, categoryId === cat.id && { backgroundColor: `${cat.color}20`, borderColor: cat.color }]}
                   >
-                    <Text style={styles.categoryChipLabel}>{cat.id}</Text>
+                    <Text style={styles.categoryChipLabel}>{cat.icon}  {t(`categories.${cat.id}`)}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -155,10 +166,13 @@ export default function AddTransactionScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   safe:   { flex: 1, backgroundColor: colors.background.app },
   header: {
+    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: spacing[4], paddingVertical: spacing[4],
     backgroundColor: colors.white, borderBottomWidth: 0.5, borderBottomColor: colors.border.default,
   },
-  title: { fontFamily: typography.fonts.bold, fontSize: typography.sizes.md, color: colors.text.primary, textAlign: 'right' },
+  title:        { fontFamily: typography.fonts.bold, fontSize: typography.sizes.md, color: colors.text.primary },
+  closeBtn:     { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  closeBtnText: { fontFamily: typography.fonts.bold, fontSize: typography.sizes.md, color: colors.text.tertiary },
   scroll: { padding: spacing[4], paddingBottom: spacing[8] },
   card: { backgroundColor: colors.background.card, borderRadius: radius.lg, padding: spacing[4], marginBottom: spacing[3] },
   typeRow: { flexDirection: 'row-reverse', gap: spacing[2] },

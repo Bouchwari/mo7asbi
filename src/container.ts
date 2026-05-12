@@ -4,6 +4,7 @@ import { AddTransactionUseCase }             from '@application/transaction/use-
 import { GetTransactionStatsUseCase }        from '@application/transaction/use-cases/GetTransactionStatsUseCase';
 import { DeleteTransactionUseCase }          from '@application/transaction/use-cases/DeleteTransactionUseCase';
 import { CreateGoalUseCase, DepositToGoalUseCase, WithdrawFromGoalUseCase, DeleteGoalUseCase } from '@application/goal/use-cases/GoalUseCases';
+import { GetGoalsUseCase } from '@application/goal/use-cases/GetGoalsUseCase';
 
 // ─── Repositories (singletons) ────────────────────────────────────────────────
 
@@ -15,6 +16,7 @@ const goalRepository        = new AsyncStorageGoalRepository();
 const addTransaction      = new AddTransactionUseCase(transactionRepository);
 const getTransactionStats = new GetTransactionStatsUseCase(transactionRepository);
 const deleteTransaction   = new DeleteTransactionUseCase(transactionRepository);
+const getGoals            = new GetGoalsUseCase(goalRepository);
 const createGoal          = new CreateGoalUseCase(goalRepository);
 const depositToGoal       = new DepositToGoalUseCase(goalRepository);
 const withdrawFromGoal    = new WithdrawFromGoalUseCase(goalRepository);
@@ -23,13 +25,11 @@ const deleteGoal          = new DeleteGoalUseCase(goalRepository);
 // ─── Container ────────────────────────────────────────────────────────────────
 
 export const container = {
-  // Repositories (only accessed directly by stores when no use case fits)
-  goalRepository,
-
   // Use cases
   addTransaction,
   getTransactionStats,
   deleteTransaction,
+  getGoals,
   createGoal,
   depositToGoal,
   withdrawFromGoal,

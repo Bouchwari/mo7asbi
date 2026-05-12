@@ -1,9 +1,16 @@
-import React, { Suspense } from 'react';
-import { View, ActivityIndicator, I18nManager } from 'react-native';
+import React from 'react';
+import { View, ActivityIndicator, I18nManager, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
+import {
+  useFonts,
+  Tajawal_400Regular,
+  Tajawal_500Medium,
+  Tajawal_700Bold,
+} from '@expo-google-fonts/tajawal';
 
 // Initialize i18n before anything renders
 import './src/i18n';
@@ -14,25 +21,39 @@ import { theme } from './src/presentation/theme';
 // Force RTL for Arabic
 I18nManager.forceRTL(true);
 
-export default function App() {
+// Keep the splash screen visible while fonts load
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
+export default function App(): React.JSX.Element | null {
+  const [fontsLoaded, fontError] = useFonts({
+    Tajawal_400Regular,
+    Tajawal_500Medium,
+    Tajawal_700Bold,
+  });
+
+  const isReady = fontsLoaded || fontError !== null;
+
+  // Hide splash once fonts are ready (or failed — fallback font will be used)
+  React.useEffect(() => {
+    if (isReady) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [isReady]);
+
+  if (!isReady) return null;
+
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <NavigationContainer>
           <StatusBar style="dark" backgroundColor={theme.colors.white} />
-          <Suspense fallback={<LoadingFallback />}>
-            <RootNavigator />
-          </Suspense>
+          <RootNavigator />
         </NavigationContainer>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
 
-function LoadingFallback() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.white }}>
-      <ActivityIndicator size="large" color={theme.colors.primary[600]} />
-    </View>
-  );
-}
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+});

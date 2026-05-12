@@ -3,19 +3,19 @@ import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MotiView } from 'moti';
 import { useNavigation } from '@react-navigation/native';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 
 import { theme } from '@presentation/theme';
-import { ScreenWrapper, EmptyState, AnimatedCard } from '@presentation/components/ui';
+import { ScreenWrapper, EmptyState } from '@presentation/components/ui';
 import { TransactionListItem } from '@presentation/components/domain/TransactionListItem';
 import { useTransactionStore } from '@presentation/store/transactionStore';
-import { RootTabParamList } from '@presentation/navigation/RootNavigator';
+import { RootStackParamList } from '@presentation/navigation/RootNavigator';
 import { useTranslation } from 'react-i18next';
 
 const { colors, typography, spacing, radius, animations } = theme;
 
-type NavProp = BottomTabNavigationProp<RootTabParamList, 'Home'>;
+type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen(): React.JSX.Element {
   const { t } = useTranslation();
@@ -23,13 +23,12 @@ export default function HomeScreen(): React.JSX.Element {
   const {
     transactions, stats, isLoading,
     selectedYear, selectedMonth,
-    setSelectedMonth,
+    setSelectedMonth, loadMonth,
   } = useTransactionStore();
 
   useEffect(() => {
-    const y = selectedYear, m = selectedMonth;
-    void useTransactionStore.getState().loadMonth(y, m);
-  }, [selectedYear, selectedMonth]);
+    void loadMonth(selectedYear, selectedMonth);
+  }, [loadMonth, selectedYear, selectedMonth]);
 
   const goToPrevMonth = (): void => {
     void Haptics.selectionAsync();
@@ -102,7 +101,7 @@ export default function HomeScreen(): React.JSX.Element {
             transition={{ type: 'spring', ...animations.spring.bouncy, delay: 120 }}
           >
             <Pressable
-              onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); nav.navigate('Statistics'); }}
+              onPress={() => { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); nav.navigate('AddTransaction'); }}
               style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.88 }]}
             >
               <Text style={styles.addBtnText}>{t('transaction.add')}</Text>

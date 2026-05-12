@@ -1,13 +1,17 @@
 import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet, View } from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 
-import HomeScreen        from '@presentation/screens/home/HomeScreen';
-import StatisticsScreen  from '@presentation/screens/statistics/StatisticsScreen';
-import GoalsScreen       from '@presentation/screens/goals/GoalsScreen';
-import SettingsScreen    from '@presentation/screens/settings/SettingsScreen';
-import { theme }         from '@presentation/theme';
+import HomeScreen           from '@presentation/screens/home/HomeScreen';
+import StatisticsScreen     from '@presentation/screens/statistics/StatisticsScreen';
+import GoalsScreen          from '@presentation/screens/goals/GoalsScreen';
+import SettingsScreen       from '@presentation/screens/settings/SettingsScreen';
+import AddTransactionScreen from '@presentation/screens/add-transaction/AddTransactionScreen';
+import { theme }            from '@presentation/theme';
+
+// ─── Param lists ──────────────────────────────────────────────────────────────
 
 export type RootTabParamList = {
   Home:       undefined;
@@ -16,11 +20,31 @@ export type RootTabParamList = {
   Settings:   undefined;
 };
 
-const Tab = createBottomTabNavigator<RootTabParamList>();
+export type RootStackParamList = {
+  MainTabs:       undefined;
+  AddTransaction: undefined;
+};
+
+// ─── Navigators ───────────────────────────────────────────────────────────────
+
+const Tab   = createBottomTabNavigator<RootTabParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const { colors, typography, spacing } = theme;
 
-export function RootNavigator(): React.JSX.Element {
+// ─── Tab icon ─────────────────────────────────────────────────────────────────
+
+function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }): React.JSX.Element {
+  return (
+    <View style={styles.iconWrap}>
+      <Text style={[styles.iconEmoji, focused && styles.iconEmojiFocused]}>{emoji}</Text>
+    </View>
+  );
+}
+
+// ─── Tab navigator ────────────────────────────────────────────────────────────
+
+function MainTabs(): React.JSX.Element {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -36,17 +60,49 @@ export function RootNavigator(): React.JSX.Element {
       }}
       screenListeners={{ tabPress: () => { void Haptics.selectionAsync(); } }}
     >
-      <Tab.Screen name="Home"       component={HomeScreen}       options={{ title: 'الرئيسية', tabBarIcon: ({ color }) => <TabIcon label="🏠" color={color} /> }} />
-      <Tab.Screen name="Statistics" component={StatisticsScreen} options={{ title: 'الإحصاء',  tabBarIcon: ({ color }) => <TabIcon label="📊" color={color} /> }} />
-      <Tab.Screen name="Goals"      component={GoalsScreen}      options={{ title: 'الأهداف',  tabBarIcon: ({ color }) => <TabIcon label="🎯" color={color} /> }} />
-      <Tab.Screen name="Settings"   component={SettingsScreen}   options={{ title: 'الإعدادات', tabBarIcon: ({ color }) => <TabIcon label="⚙️" color={color} /> }} />
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ title: 'الرئيسية', tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} /> }}
+      />
+      <Tab.Screen
+        name="Statistics"
+        component={StatisticsScreen}
+        options={{ title: 'الإحصاء', tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} /> }}
+      />
+      <Tab.Screen
+        name="Goals"
+        component={GoalsScreen}
+        options={{ title: 'الأهداف', tabBarIcon: ({ focused }) => <TabIcon emoji="🎯" focused={focused} /> }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: 'الإعدادات', tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} /> }}
+      />
     </Tab.Navigator>
   );
 }
 
-function TabIcon({ label, color }: { label: string; color: string }): React.JSX.Element {
-  return <View style={[styles.icon, { borderColor: color }]}><React.Fragment>{label}</React.Fragment></View>;
+// ─── Root stack (tabs + modals) ───────────────────────────────────────────────
+
+export function RootNavigator(): React.JSX.Element {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen
+        name="AddTransaction"
+        component={AddTransactionScreen}
+        options={{
+          presentation: 'modal',
+          animation:    'slide_from_bottom',
+        }}
+      />
+    </Stack.Navigator>
+  );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   tabBar: {
@@ -56,8 +112,15 @@ const styles = StyleSheet.create({
     height:          theme.layout.bottomNavHeight + spacing[2],
     paddingTop:      spacing[1],
   },
-  icon: {
-    width: 24, height: 24,
-    alignItems: 'center', justifyContent: 'center',
+  iconWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconEmoji: {
+    fontSize: 20,
+    opacity: 0.5,
+  },
+  iconEmojiFocused: {
+    opacity: 1,
   },
 });
