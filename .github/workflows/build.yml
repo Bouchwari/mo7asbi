@@ -11,8 +11,6 @@
 #   ANDROID_STORE_PASSWORD    — keystore password
 #   ANDROID_KEY_ALIAS         — key alias inside the keystore
 #   ANDROID_KEY_PASSWORD      — key password
-#
-# The built APK is uploaded as a downloadable artifact on the Actions run page.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: Build APK
@@ -38,7 +36,7 @@ concurrency:
 
 jobs:
   # ──────────────────────────────────────────────────────────────────────────
-  # 1. TypeScript gate — fails fast before wasting build minutes
+  # 1. TypeScript gate
   # ──────────────────────────────────────────────────────────────────────────
   type-check:
     name: TypeScript
@@ -72,7 +70,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      # Java 17 is required by modern Android Gradle plugin
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -81,11 +78,10 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
-      # Generate the native android/ folder from Expo config
       - name: Expo prebuild
         run: npx expo prebuild --platform android --clean
 
-      # ── Resolve which variant to build ──────────────────────────────────
+      # ── Resolve build variant ────────────────────────────────────────────
       - name: Resolve variant
         id: variant
         run: |
@@ -97,10 +93,26 @@ jobs:
             echo "name=debug" >> "$GITHUB_OUTPUT"
           fi
 
-      # ── Signing setup (only for release, only when secrets exist) ────────
+      # ── Check if keystore secret is available ────────────────────────────
+      # secrets context is NOT allowed in if: expressions, so we promote
+      # the secret to an env var and write the result to a step output.
+      - name: Check keystore secret
+        id: keystore
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+
+      # ── Decode keystore (only when secret exists) ────────────────────────
       - name: Decode keystore
-        if: steps.variant.outputs.name == 'release' && secrets.ANDROID_KEYSTORE_BASE64 != ''
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/hasabi.keystore
+        if: steps.variant.outputs.name == 'release' && steps.keystore.outputs.exists == 'true'
+        run: echo "$KEYSTORE_B64" | base64 --decode > android/app/hasabi.keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
 
       # ── Gradle build ─────────────────────────────────────────────────────
       - name: Build debug APK
@@ -109,7 +121,7 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Build release APK (signed)
-        if: steps.variant.outputs.name == 'release' && secrets.ANDROID_KEYSTORE_BASE64 != ''
+        if: steps.variant.outputs.name == 'release' && steps.keystore.outputs.exists == 'true'
         working-directory: android
         run: >
           ./gradlew assembleRelease --no-daemon
@@ -118,8 +130,8 @@ jobs:
           -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEY_ALIAS }}
           -Pandroid.injected.signing.key.password=${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      - name: Build release APK (unsigned — no keystore secrets set)
-        if: steps.variant.outputs.name == 'release' && secrets.ANDROID_KEYSTORE_BASE64 == ''
+      - name: Build release APK (unsigned — no keystore configured)
+        if: steps.variant.outputs.name == 'release' && steps.keystore.outputs.exists == 'false'
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
 
