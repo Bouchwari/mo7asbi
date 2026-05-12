@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(gh pr *)",
-      "PowerShell(gh pr list)"
+      "PowerShell(gh pr list)",
+      "Bash(npx tsc *)",
+      "Bash(gh run *)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\('react:', p.dependencies?.react || p.devDependencies?.react\\); console.log\\('react-native:', p.dependencies?.['react-native']\\); console.log\\('expo:', p.dependencies?.expo\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }
