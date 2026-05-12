@@ -39,6 +39,11 @@ jobs:
         env:
           EXPO_NO_TELEMETRY: '1'
 
+      - name: Force Kotlin 1.9.25
+        run: |
+          sed -i 's/kotlinVersion = "1.9.24"/kotlinVersion = "1.9.25"/' android/build.gradle
+          grep kotlinVersion android/build.gradle
+
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
