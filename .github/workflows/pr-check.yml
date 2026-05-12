@@ -1,16 +1,8 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# Hasabi — Pull Request gate (type-check only, no build)
-# ─────────────────────────────────────────────────────────────────────────────
-
 name: PR Check
 
 on:
   pull_request:
     branches: [main, dev]
-
-concurrency:
-  group: pr-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
 
 jobs:
   type-check:
@@ -18,13 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: '20'
+          cache: npm
           cache-dependency-path: package-lock.json
-
       - run: npm ci
       - run: npx tsc --noEmit
-      
