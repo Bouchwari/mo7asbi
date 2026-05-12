@@ -112,7 +112,7 @@ export default function StatisticsScreen(): React.JSX.Element {
             style={styles.countCard}
           >
             <Text style={styles.countLabel}>{t('stats.totalTransactions')}</Text>
-            <Text style={styles.countValue}>{transactions.length.toLocaleString('ar-MA')}</Text>
+            <Text style={styles.countValue}>{transactions.length.toString()}</Text>
           </MotiView>
         </ScrollView>
       </ScreenWrapper>

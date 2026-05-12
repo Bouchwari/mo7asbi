@@ -61,7 +61,9 @@ export class Money extends ValueObject<MoneyProps> {
   }
 
   format(): string {
-    return `${this.amount.toLocaleString('ar-MA', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${this.currencySymbol}`;
+    const rounded = Math.round(this.amount * 100) / 100;
+    const str = rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2);
+    return `${str} ${this.currencySymbol}`;
   }
 
   private assertSameCurrency(other: Money): void {

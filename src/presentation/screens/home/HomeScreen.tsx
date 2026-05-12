@@ -42,9 +42,8 @@ export default function HomeScreen(): React.JSX.Element {
     else setSelectedMonth(selectedYear, selectedMonth + 1);
   };
 
-  const monthLabel = new Date(selectedYear, selectedMonth - 1).toLocaleString('ar-MA', {
-    month: 'long', year: 'numeric',
-  });
+  const ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const monthLabel = `${ARABIC_MONTHS[selectedMonth - 1]} ${selectedYear}`;
 
   const recentTx = transactions.slice(0, 5);
 

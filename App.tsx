@@ -12,16 +12,17 @@ import {
   Tajawal_700Bold,
 } from '@expo-google-fonts/tajawal';
 
-// Initialize i18n before anything renders
 import './src/i18n';
 
 import { RootNavigator } from './src/presentation/navigation/RootNavigator';
 import { theme } from './src/presentation/theme';
 
-// Force RTL for Arabic
-I18nManager.forceRTL(true);
+// Force RTL only when needed — calling forceRTL when already RTL
+// triggers an Android Activity.recreate() loop on some devices
+if (!I18nManager.isRTL) {
+  I18nManager.forceRTL(true);
+}
 
-// Keep the splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function App(): React.JSX.Element | null {
@@ -31,9 +32,16 @@ export default function App(): React.JSX.Element | null {
     Tajawal_700Bold,
   });
 
-  const isReady = fontsLoaded || fontError !== null;
+  // Timeout fallback: if fonts neither load nor error within 4 seconds,
+  // proceed anyway so the app never stays stuck on the splash screen
+  const [timedOut, setTimedOut] = React.useState(false);
+  React.useEffect(() => {
+    const t = setTimeout(() => setTimedOut(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
 
-  // Hide splash once fonts are ready (or failed — fallback font will be used)
+  const isReady = fontsLoaded || fontError !== null || timedOut;
+
   React.useEffect(() => {
     if (isReady) {
       SplashScreen.hideAsync().catch(() => {});
