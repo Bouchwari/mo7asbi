@@ -124,7 +124,7 @@ export default function GoalsScreen(): React.JSX.Element {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setShowForm(false); setName(''); setTarget(''); setEmoji('🎯');
     } else {
-      setFormErr(result.error);
+      setFormErr(result.error !== undefined ? result.error : null);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };

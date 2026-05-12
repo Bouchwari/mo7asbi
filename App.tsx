@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ActivityIndicator, I18nManager, StyleSheet } from 'react-native';
+import { I18nManager, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';

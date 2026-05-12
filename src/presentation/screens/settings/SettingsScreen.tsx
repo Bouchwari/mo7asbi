@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { theme } from '@presentation/theme';
 import { AnimatedCard, ScreenWrapper } from '@presentation/components/ui';
 
-const { colors, typography, spacing, radius, animations } = theme;
+const { colors, typography, spacing, animations } = theme;
 
 interface SettingRowProps {
   label:    string;
