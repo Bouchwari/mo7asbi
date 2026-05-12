@@ -9,7 +9,9 @@
       "Bash(node -e ' *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(npm install *)",
+      "Bash(node -e \"const l=require\\('./package-lock.json'\\); console.log\\('lockfileVersion:', l.lockfileVersion, '| react:', l.packages['node_modules/react']?.version\\)\")"
     ]
   }
 }
