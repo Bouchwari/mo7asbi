@@ -16,6 +16,9 @@ const ar = {
     category:        'الفئة',
     note:            'ملاحظة',
     notePlaceholder: 'اختياري...',
+    date:            'التاريخ',
+    today:           'اليوم',
+    yesterday:       'أمس',
   },
   goals: {
     title:          'أهداف التوفير',
