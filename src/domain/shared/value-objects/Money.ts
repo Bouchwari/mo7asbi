@@ -61,8 +61,9 @@ export class Money extends ValueObject<MoneyProps> {
   }
 
   format(): string {
-    const rounded = Math.round(this.amount * 100) / 100;
-    const str = rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2);
+    const str = this.amount % 1 === 0
+      ? this.amount.toFixed(0)
+      : this.amount.toFixed(2);
     return `${str} ${this.currencySymbol}`;
   }
 

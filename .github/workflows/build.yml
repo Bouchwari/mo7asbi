@@ -39,14 +39,24 @@ jobs:
         env:
           EXPO_NO_TELEMETRY: '1'
 
-      # Limit to arm64-v8a only — covers 95%+ of modern Android phones
-      # Cuts APK size from ~140MB to ~30MB
+      # Limit to arm64-v8a (95%+ of modern phones). Cuts APK from ~140MB to ~25MB.
+      # Uses Node to patch build.gradle reliably instead of fragile sed patterns.
       - name: Restrict ABI to arm64-v8a
         run: |
-          sed -i '/defaultConfig {/a\        ndk { abiFilters "arm64-v8a" }' android/app/build.gradle
+          node -e "
+            const fs = require('fs');
+            const path = 'android/app/build.gradle';
+            let content = fs.readFileSync(path, 'utf8');
+            // Insert ndk block after the first 'defaultConfig {' line
+            content = content.replace(
+              /(\s*defaultConfig\s*\{)/,
+              '\$1\n        ndk { abiFilters \"arm64-v8a\" }'
+            );
+            fs.writeFileSync(path, content);
+            console.log('ABI filter applied');
+          "
 
-      # Create a throwaway keystore so we can build a release APK.
-      # Release mode: JS bundle always embedded, no Metro dev-server connection.
+      # Throwaway keystore for signing — not for Play Store, just to enable release mode.
       - name: Create signing keystore
         run: |
           keytool -genkey -v \

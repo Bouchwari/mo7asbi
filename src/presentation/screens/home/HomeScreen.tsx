@@ -15,6 +15,11 @@ import { useTranslation } from 'react-i18next';
 
 const { colors, typography, spacing, radius, animations } = theme;
 
+const ARABIC_MONTHS = [
+  'يناير','فبراير','مارس','أبريل','مايو','يونيو',
+  'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر',
+] as const;
+
 type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen(): React.JSX.Element {
@@ -42,7 +47,6 @@ export default function HomeScreen(): React.JSX.Element {
     else setSelectedMonth(selectedYear, selectedMonth + 1);
   };
 
-  const ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   const monthLabel = `${ARABIC_MONTHS[selectedMonth - 1]} ${selectedYear}`;
 
   const recentTx = transactions.slice(0, 5);
