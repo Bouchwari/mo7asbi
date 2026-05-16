@@ -65,6 +65,18 @@ const ar = {
     savings:       'توفير',
     other_income:  'دخل آخر',
   },
+  salary: {
+    sectionTitle:  'الراتب والميزانية',
+    monthlySalary: 'الراتب الشهري',
+    payday:        'يوم استلام الراتب',
+    notSet:        'غير محدد',
+    savingsRate:   'نسبة الادخار',
+    remaining:     'المتبقي',
+    save:          'حفظ',
+    setupCTA:      'حدد راتبك لمتابعة معدل ادخارك',
+    day:           'اليوم',
+    perMonth:      'شهرياً',
+  },
   transactions: {
     title:         'كل المعاملات',
     filterAll:     'الكل',

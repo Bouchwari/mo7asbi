@@ -1,15 +1,20 @@
 import { AsyncStorageTransactionRepository } from '@infrastructure/persistence/AsyncStorageTransactionRepository';
 import { AsyncStorageGoalRepository }        from '@infrastructure/persistence/AsyncStorageGoalRepository';
+import { AsyncStorageSettingsRepository }    from '@infrastructure/persistence/AsyncStorageSettingsRepository';
 import { AddTransactionUseCase }             from '@application/transaction/use-cases/AddTransactionUseCase';
 import { GetTransactionStatsUseCase }        from '@application/transaction/use-cases/GetTransactionStatsUseCase';
 import { DeleteTransactionUseCase }          from '@application/transaction/use-cases/DeleteTransactionUseCase';
 import { CreateGoalUseCase, DepositToGoalUseCase, WithdrawFromGoalUseCase, DeleteGoalUseCase } from '@application/goal/use-cases/GoalUseCases';
-import { GetGoalsUseCase } from '@application/goal/use-cases/GetGoalsUseCase';
+import { GetGoalsUseCase }          from '@application/goal/use-cases/GetGoalsUseCase';
+import { GetUserSettingsUseCase }   from '@application/settings/use-cases/GetUserSettingsUseCase';
+import { UpdateSalaryUseCase }      from '@application/settings/use-cases/UpdateSalaryUseCase';
+import { UpdatePaydayUseCase }      from '@application/settings/use-cases/UpdatePaydayUseCase';
 
 // ─── Repositories (singletons) ────────────────────────────────────────────────
 
 const transactionRepository = new AsyncStorageTransactionRepository();
 const goalRepository        = new AsyncStorageGoalRepository();
+const settingsRepository    = new AsyncStorageSettingsRepository();
 
 // ─── Use cases ────────────────────────────────────────────────────────────────
 
@@ -21,11 +26,13 @@ const createGoal          = new CreateGoalUseCase(goalRepository);
 const depositToGoal       = new DepositToGoalUseCase(goalRepository);
 const withdrawFromGoal    = new WithdrawFromGoalUseCase(goalRepository);
 const deleteGoal          = new DeleteGoalUseCase(goalRepository);
+const getUserSettings     = new GetUserSettingsUseCase(settingsRepository);
+const updateSalary        = new UpdateSalaryUseCase(settingsRepository);
+const updatePayday        = new UpdatePaydayUseCase(settingsRepository);
 
 // ─── Container ────────────────────────────────────────────────────────────────
 
 export const container = {
-  // Use cases
   addTransaction,
   getTransactionStats,
   deleteTransaction,
@@ -34,4 +41,7 @@ export const container = {
   depositToGoal,
   withdrawFromGoal,
   deleteGoal,
+  getUserSettings,
+  updateSalary,
+  updatePayday,
 } as const;
