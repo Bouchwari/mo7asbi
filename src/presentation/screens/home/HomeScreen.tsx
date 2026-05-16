@@ -116,7 +116,14 @@ export default function HomeScreen(): React.JSX.Element {
             from={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ type: 'timing', duration: 300, delay: 180 }}
+            style={styles.sectionRow}
           >
+            <Pressable
+              onPress={() => { void Haptics.selectionAsync(); nav.navigate('Transactions'); }}
+              hitSlop={8}
+            >
+              <Text style={styles.viewAll}>{t('transactions.title')} ›</Text>
+            </Pressable>
             <Text style={styles.sectionTitle}>{t('home.recent')}</Text>
           </MotiView>
 
@@ -172,8 +179,19 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[4], alignItems: 'center', marginBottom: spacing[5],
   },
   addBtnText: { color: colors.white, fontFamily: typography.fonts.bold, fontSize: typography.sizes.base },
+  sectionRow: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing[3],
+  },
   sectionTitle: {
     fontFamily: typography.fonts.bold, fontSize: typography.sizes.md,
-    color: colors.text.primary, textAlign: 'right', marginBottom: spacing[3],
+    color: colors.text.primary, textAlign: 'right',
+  },
+  viewAll: {
+    fontFamily: typography.fonts.medium,
+    fontSize: typography.sizes.sm,
+    color: colors.primary[600],
   },
 });

@@ -65,6 +65,16 @@ const ar = {
     savings:       'توفير',
     other_income:  'دخل آخر',
   },
+  transactions: {
+    title:         'كل المعاملات',
+    filterAll:     'الكل',
+    deleteTitle:   'حذف المعاملة',
+    deleteConfirm: 'هل تريد حذف هذه المعاملة؟',
+    cancel:        'إلغاء',
+    delete:        'حذف',
+    empty:         'لا توجد معاملات',
+    emptySubtitle: 'أضف معاملة لتتبع إنفاقك',
+  },
   errors: {
     invalidAmount: 'أدخل مبلغاً صحيحاً أكبر من صفر',
     fillRequired:  'يرجى ملء جميع الحقول المطلوبة',

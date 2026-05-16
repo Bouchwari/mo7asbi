@@ -4,12 +4,13 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 
-import HomeScreen           from '@presentation/screens/home/HomeScreen';
-import StatisticsScreen     from '@presentation/screens/statistics/StatisticsScreen';
-import GoalsScreen          from '@presentation/screens/goals/GoalsScreen';
-import SettingsScreen       from '@presentation/screens/settings/SettingsScreen';
-import AddTransactionScreen from '@presentation/screens/add-transaction/AddTransactionScreen';
-import { theme }            from '@presentation/theme';
+import HomeScreen            from '@presentation/screens/home/HomeScreen';
+import StatisticsScreen      from '@presentation/screens/statistics/StatisticsScreen';
+import GoalsScreen           from '@presentation/screens/goals/GoalsScreen';
+import SettingsScreen        from '@presentation/screens/settings/SettingsScreen';
+import AddTransactionScreen  from '@presentation/screens/add-transaction/AddTransactionScreen';
+import TransactionsScreen    from '@presentation/screens/transactions/TransactionsScreen';
+import { theme }             from '@presentation/theme';
 
 // ─── Param lists ──────────────────────────────────────────────────────────────
 
@@ -23,6 +24,7 @@ export type RootTabParamList = {
 export type RootStackParamList = {
   MainTabs:       undefined;
   AddTransaction: undefined;
+  Transactions:   undefined;
 };
 
 // ─── Navigators ───────────────────────────────────────────────────────────────
@@ -97,6 +99,11 @@ export function RootNavigator(): React.JSX.Element {
           presentation: 'modal',
           animation:    'slide_from_bottom',
         }}
+      />
+      <Stack.Screen
+        name="Transactions"
+        component={TransactionsScreen}
+        options={{ animation: 'slide_from_right' }}
       />
     </Stack.Navigator>
   );
