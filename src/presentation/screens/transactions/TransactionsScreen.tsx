@@ -7,10 +7,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MotiView } from 'moti';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import * as Haptics from 'expo-haptics';
-import { format, isToday, isYesterday } from 'date-fns';
+import { format, isToday, isYesterday, parse } from 'date-fns';
 import { ar as arLocale } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@presentation/navigation/RootNavigator';
 
 import { theme } from '@presentation/theme';
 import { EmptyState } from '@presentation/components/ui';
@@ -47,6 +49,7 @@ interface SwipeableRowProps {
 }
 
 function SwipeableRow({ transaction: tx, index, onDelete }: SwipeableRowProps): React.JSX.Element {
+  const { t } = useTranslation();
   const swipeRef = useRef<Swipeable | null>(null);
 
   const renderRightActions = useCallback((): React.JSX.Element => (
@@ -58,9 +61,9 @@ function SwipeableRow({ transaction: tx, index, onDelete }: SwipeableRowProps): 
       }}
     >
       <Text style={styles.deleteActionEmoji}>🗑️</Text>
-      <Text style={styles.deleteActionText}>حذف</Text>
+      <Text style={styles.deleteActionText}>{t('transactions.delete')}</Text>
     </Pressable>
-  ), [tx, onDelete]);
+  ), [tx, onDelete, t]);
 
   const handleSwipeOpen = useCallback((): void => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -83,7 +86,7 @@ function SwipeableRow({ transaction: tx, index, onDelete }: SwipeableRowProps): 
 
 export default function TransactionsScreen(): React.JSX.Element {
   const { t } = useTranslation();
-  const nav = useNavigation();
+  const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {
     transactions, isLoading,
     selectedYear, selectedMonth,
@@ -124,10 +127,10 @@ export default function TransactionsScreen(): React.JSX.Element {
     setSelectedCategoryId(null);
   };
 
-  const handleCategoryChip = (id: CategoryId | null): void => {
+  const handleCategoryChip = useCallback((id: CategoryId | null): void => {
     void Haptics.selectionAsync();
     setSelectedCategoryId(prev => prev === id ? null : id);
-  };
+  }, []);
 
   // ── Filtered + grouped sections ───────────────────────────────────────────
 
@@ -147,9 +150,9 @@ export default function TransactionsScreen(): React.JSX.Element {
     }
 
     return Array.from(groups.entries())
-      .sort((a, b) => b[0].localeCompare(a[0]))
+      .sort((a, b) => (b[0] > a[0] ? 1 : -1))
       .map(([dateKey, data]) => {
-        const date = new Date(dateKey);
+        const date = parse(dateKey, 'yyyy-MM-dd', new Date());
         let title: string;
         if (isToday(date)) title = t('transaction.today');
         else if (isYesterday(date)) title = t('transaction.yesterday');
